@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "shared_run_root": "/data/runs/avatar-creation",
+  "output_root": "/data/outputs/avatar-creation",
+  "subjects": [
+    "example-subject"
+  ],
+  "task": {
+    "command": [
+      "{python}",
+      "run_methods.py",
+      "mmlphuman",
+      "--dataset-kind",
+      "processed",
+      "--dataset-path",
+      "/data/processed",
+      "--subjects",
+      "{subject}",
+      "--output-dir",
+      "{output_dir}",
+      "--no-tui",
+      "--",
+      "--views",
+      "4",
+      "--time-steps",
+      "16"
+    ],
+    "output_layout": "subject"
+  },
+  "machines": [
+    {
+      "name": "local",
+      "host": "localhost",
+      "transport": "local",
+      "cwd": "/opt/avatar-creation",
+      "python": "/opt/miniforge/envs/vci-avatar-creation/bin/python",
+      "gpus": [
+        {
+          "id": 0,
+          "workers": 1
+        }
+      ]
+    }
+  ]
+}

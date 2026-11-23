@@ -1,0 +1,17 @@
+diff --git a/utils/loss_utils.py b/utils/loss_utils.py
+--- a/utils/loss_utils.py
++++ b/utils/loss_utils.py
+@@ -14,5 +14,5 @@ def psnr(img1, img2):
+     img1 = img1.permute(2,0,1)[None]
+     img2 = img2.permute(2,0,1)[None]
+-    loss = peak_signal_noise_ratio(img1, img2)
++    loss = peak_signal_noise_ratio(img1, img2, data_range=1.0)
+     return loss
+ 
+@@ -36,2 +36,6 @@ def lpips_loss(img1, img2):
+     loss = lpips_model(img1, img2)
++    # TorchMetrics keeps every score in metric state. Training only needs the
++    # current differentiable value; retaining earlier values also retains their
++    # autograd graphs and makes each iteration progressively slower.
++    lpips_model.reset()
+     return loss

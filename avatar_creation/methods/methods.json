@@ -1,0 +1,124 @@
+{
+  "methods": {
+    "pig-avatar": {
+      "output_subdir": "neu-pig-smplx",
+      "evaluation_scripts": {
+        "novel_view": "scripts/evaluation/eval_pig_avatar.py --split novel-view (runs src.opt_pipeline.checkpoint_eval)",
+        "novel_pose": "scripts/evaluation/eval_pig_avatar.py --split novel-pose (runs src.opt_pipeline.checkpoint_eval_novel_pose_pca)"
+      },
+      "description": "Train PiG-Avatar on unified dataset subjects.",
+      "conda_env": "pig-avatar",
+      "setup_command": "scripts/setup/setup_pig_avatar_env.sh",
+      "cwd": "external/neu-pig-smplx",
+      "required_files": ["configs/method/pig_avatar.json"],
+      "required_any_files": [["$VCI_SMPLX_MODEL", "models/smplx/SMPLX_NEUTRAL.npz", "../mamma/data/body_models/smplx_locked_head/smplx/SMPLX_NEUTRAL.npz"]],
+      "environment_check": [
+        "python",
+        "-c",
+        "import os, sys, torch, torchmetrics, torch_fidelity, runpy; target = os.path.join(sys.prefix, 'targets', 'x86_64-linux'); include = os.path.join(target, 'include'); library = os.path.join(target, 'lib'); os.environ.setdefault('CUDA_HOME', sys.prefix); os.environ['CPATH'] = include + (os.pathsep + os.environ['CPATH'] if os.environ.get('CPATH') else ''); os.environ['CPLUS_INCLUDE_PATH'] = include + (os.pathsep + os.environ['CPLUS_INCLUDE_PATH'] if os.environ.get('CPLUS_INCLUDE_PATH') else ''); os.environ['LIBRARY_PATH'] = library + (os.pathsep + os.environ['LIBRARY_PATH'] if os.environ.get('LIBRARY_PATH') else ''); os.environ['LD_LIBRARY_PATH'] = library + (os.pathsep + os.environ['LD_LIBRARY_PATH'] if os.environ.get('LD_LIBRARY_PATH') else ''); assert torch.cuda.is_available(), 'CUDA is unavailable'; capability = torch.cuda.get_device_capability(); required = f'sm_{capability[0]}{capability[1]}'; supported = torch.cuda.get_arch_list(); assert required in supported, f'GPU requires {required}, but this PyTorch wheel supports only {supported}'; os.environ.setdefault('TORCH_CUDA_ARCH_LIST', f'{capability[0]}.{capability[1]}'); torch.zeros(1, device='cuda'); runpy.run_path('../../scripts/diagnostics/check_pig_avatar_env.py', run_name='__main__')",
+        "--device",
+        "cuda:0"
+      ],
+      "required_keys": ["images", "masks", "calibration", "smplx"],
+      "command": [
+        "python",
+        "{project_root}/avatar_creation/methods/pig_avatar.py",
+        "--dataset-manifest",
+        "{manifest}",
+        "--output-dir",
+        "{output_dir}"
+      ]
+    },
+    "mmlphuman": {
+      "evaluation_scripts": {
+        "novel_view": "scripts/evaluation/eval_mmlphuman.py --split novel-view",
+        "novel_pose": "scripts/evaluation/eval_mmlphuman.py --split novel-pose"
+      },
+      "description": "Run the external MMLP Human method through a manifest-backed THuman staging adapter.",
+      "conda_env": "mmlphuman",
+      "setup_command": "scripts/setup/setup_mmlphuman_env.sh",
+      "cwd": "external/mmlphuman",
+      "required_files": ["train.py", "smpl_model/smplx/SMPLX_NEUTRAL.npz"],
+      "environment_check": ["python", "-c", "import gsplat, h5py, omegaconf, open3d, pytorch3d, torch; import sys; from pathlib import Path; assert Path(\"train.py\").is_file(); assert (Path(sys.prefix) / \"bin\" / \"PointInterpolant\").is_file()"],
+      "required_keys": ["images", "masks", "calibration", "smplx"],
+      "command": ["python", "{project_root}/avatar_creation/methods/mmlphuman.py", "--dataset-manifest", "{manifest}", "--output-dir", "{output_dir}"]
+    },
+    "mmlphuman-lod": {
+      "evaluation_scripts": {
+        "novel_view": "scripts/evaluation/eval_mmlphuman.py --split novel-view",
+        "novel_pose": "scripts/evaluation/eval_mmlphuman.py --split novel-pose"
+      },
+      "description": "MMLPHuman with continuous nested Gaussian subsets and fraction-conditioned basis weights; original training configuration.",
+      "conda_env": "mmlphuman",
+      "setup_command": "scripts/setup/setup_mmlphuman_env.sh",
+      "cwd": "external/mmlphuman",
+      "required_files": [
+        "train.py",
+        "smpl_model/smplx/SMPLX_NEUTRAL.npz"
+      ],
+      "environment_check": [
+        "python",
+        "-c",
+        "import gsplat, h5py, omegaconf, open3d, pytorch3d, torch; import sys; from pathlib import Path; assert Path(\"train.py\").is_file(); assert (Path(sys.prefix) / \"bin\" / \"PointInterpolant\").is_file()"
+      ],
+      "required_keys": [
+        "images",
+        "masks",
+        "calibration",
+        "smplx"
+      ],
+      "command": [
+        "python",
+        "{project_root}/avatar_creation/methods/mmlphuman_lod.py",
+        "--dataset-manifest",
+        "{manifest}",
+        "--output-dir",
+        "{output_dir}"
+      ]
+    },
+    "animatable-gaussians": {
+      "evaluation_scripts": {
+        "novel_view": "scripts/evaluation/eval_animatable_gaussians.py --split novel-view",
+        "novel_pose": "scripts/evaluation/eval_animatable_gaussians.py --split novel-pose"
+      },
+      "description": "Run the external Animatable Gaussians method through a manifest-backed THuman staging adapter.",
+      "conda_env": "animatable-gaussians",
+      "setup_command": "scripts/setup/setup_animatable_gaussians_env.sh",
+      "cwd": "external/AnimatableGaussians",
+      "required_files": ["main_avatar.py", "smpl_files/smplx/SMPLX_NEUTRAL.npz"],
+      "environment_check": ["python", "-c", "import cv2, diff_gaussian_rasterization_depth_alpha, fused, posevocab_custom_ops, pytorch3d, root_finding, torch, upfirdn2d, yaml; from pathlib import Path; assert Path(\"main_avatar.py\").is_file()"],
+      "required_keys": ["images", "masks", "calibration", "smplx"],
+      "command": ["python", "{project_root}/avatar_creation/methods/animatable_gaussians.py", "--dataset-manifest", "{manifest}", "--output-dir", "{output_dir}"]
+    },
+    "humangs": {
+      "description": "HumanGS feed-forward reconstruction with strict VCI training context and novel-view/novel-pose evaluation.",
+      "conda_env": "humangs",
+      "setup_command": "scripts/setup/setup_humangs_env.sh",
+      "cwd": "external/HumanGS",
+      "required_files": [
+        "train.py",
+        "configs/HumanGS_config.yaml",
+        "body_models/smplx/SMPLX_NEUTRAL.npz"
+      ],
+      "required_keys": [
+        "images",
+        "masks",
+        "calibration",
+        "smplx"
+      ],
+      "environment_check": ["python", "../../scripts/diagnostics/check_humangs_env.py"],
+      "evaluation_scripts": {
+        "novel_view": "scripts/evaluation/eval_humangs.py --split novel-view",
+        "novel_pose": "scripts/evaluation/eval_humangs.py --split novel-pose"
+      },
+      "command": [
+        "python",
+        "{project_root}/avatar_creation/methods/humangs.py",
+        "--dataset-manifest",
+        "{manifest}",
+        "--output-dir",
+        "{output_dir}"
+      ]
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "dataset_kind": "dancenet3d",
+  "subjects": ["example-subject"],
+  "train": {"views": 2, "time_steps": 4, "resolution": 1024}
+}

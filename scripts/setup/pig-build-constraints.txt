@@ -1,0 +1,2 @@
+# Cholespy calls nanobind::detail::keep_alive, which changed in nanobind 3.
+nanobind<3

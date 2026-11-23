@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "dataset_kind": "thuman",
+  "dataset_path": "/data/thuman",
+  "subjects": ["example-subject"],
+  "train": {"views": 4, "time_steps": 16, "resolution": 512}
+}
